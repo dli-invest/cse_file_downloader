@@ -41,16 +41,19 @@ jobs:
 
       - name: Commit files
         run: |
+          if !git diff-index --quiet HEAD --; then
+             echo "PUSH_FILES=true" >> $GITHUB_ENV
+          fi
           git add *.csv
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          if ! git diff-index --quiet HEAD --; then
+          if !git diff-index --quiet HEAD --; then
              echo "PUSH_FILES=true" >> $GITHUB_ENV
           fi
           git commit -m "Add changes" -a
 
       - name: Push changes
-        if: ${{ env.PUSH_FILES == true }}
+        if: ${{ env.PUSH_FILES == "true" }}
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
