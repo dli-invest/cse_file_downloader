@@ -38,6 +38,10 @@ stockUrls = [
 {
     "stock": "VST",
     "url": "https://www.thecse.com/en/listings/technology/victory-square-technologies-inc"
+},
+{
+    "stock": "ACT",
+    "url": "https://thecse.com/en/listings/technology/aduro-clean-technologies-inc"
 }
 ]
 
