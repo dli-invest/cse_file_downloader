@@ -70,7 +70,7 @@ jobs:
           webhook: ${{ secrets.DISCORD_CODE_STATUS_WEBHOOK }}
           status: ${{ job.status }}
           title: ${{github.repository}}
-          description: "Failed to get update tickers"
+          description: "Failed to push news"
           nofail: false
           nocontext: false
           noprefix: false
