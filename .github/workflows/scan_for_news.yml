@@ -32,7 +32,7 @@ jobs:
         run: |
           sudo apt install build-essential libpoppler-cpp-dev pkg-config -y
           pip install -r requirements.txt
-          python3 scrap_cse_release.py
+          python3 scrap_cse_releases.py
 
       - uses: actions/upload-artifact@v2
         with:
