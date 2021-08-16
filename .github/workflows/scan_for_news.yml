@@ -37,7 +37,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
             name: scrap cse releases
-            path: data/docs.csv
+            path: docs.csv
 
       - name: Commit files
         run: |
@@ -45,7 +45,12 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git commit -m "Add changes" -a
+          if ! git diff-index --quiet HEAD --; then
+             echo "PUSH_FILES=true" >> $GITHUB_ENV
+          fi
+
       - name: Push changes
+        if: ${{ env.PUSH_FILES == 'true' }}
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -58,7 +63,7 @@ jobs:
           webhook: ${{ secrets.DISCORD_CODE_STATUS_WEBHOOK }}
           status: ${{ job.status }}
           title: ${{github.repository}}
-          description: "Failed to get eod tickers"
+          description: "Failed to get update tickers"
           nofail: false
           nocontext: false
           noprefix: false
