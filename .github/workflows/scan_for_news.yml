@@ -50,7 +50,7 @@ jobs:
           fi
 
       - name: Push changes
-        if: ${{ env.PUSH_FILES == 'true' }}
+        if: ${{ env.PUSH_FILES == true }}
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
