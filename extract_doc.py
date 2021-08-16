@@ -20,25 +20,25 @@ def handle_logic(dataDict = {
 }):
     dl_doc_from_url(dataDict.get("url"), dataDict.get("path"))
 
-    extract_from_file(dataDict.get("path"))
+    pdf_text = extract_from_file(dataDict.get("path"))
+
+    parts = dataDict.get("path").split(".")
+    txt_path = "".join(parts[:-1] + [".txt"])
+    # save file as text
+    with open(txt_path, "w") as f:
+        f.write(pdf_text)
 
 def extract_from_file(path: str):
     # If it's password-protected
     with open(path, "rb") as f:
         pdf = pdftotext.PDF(f)
 
-    # How many pages?
-    print(len(pdf))
-
     # Iterate over all the pages
     for page in pdf:
         print(page)
 
-    # Read some individual pages
-    print(pdf[0])
-    print(pdf[1])
-
     # Read all the text into one string
-    print("\n\n".join(pdf))
+    pdf_pages = "\n\n".join(pdf)
+    return pdf_pages
 
-handle_logic({"url": "https://webfiles.thecse.com/Peak_Fintech_Continues_Expansion_of_Business_Hub_with_Addition_of_Two_New_Banks_and_New_Office_in_Guangzhou.pdf?dcWC2NW_GzmSFbHOadxyHNESnqSpHkza", "path": "PKK_Peak_Fintech_Continues_Expansion_of_Business_Hub_with_Addition_of_Two_New_Banks_and_New_Office_in_Guangzhou.pdf?dcWC2NW_GzmSFbHOadxyHNESnqSpHkza.pdf"})
+handle_logic({"url": "https://webfiles.thecse.com/Peak_Fintech_Continues_Expansion_of_Business_Hub_with_Addition_of_Two_New_Banks_and_New_Office_in_Guangzhou.pdf?dcWC2NW_GzmSFbHOadxyHNESnqSpHkza", "path": "docs/PKK_Peak_Fintech_Continues_Expansion_of_Business_Hub_with_Addition_of_Two_New_Banks_and_New_Office_in_Guangzhou.pdf?dcWC2NW_GzmSFbHOadxyHNESnqSpHkza.pdf"})

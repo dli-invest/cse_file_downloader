@@ -1,7 +1,22 @@
 import pandas as pd
 import time
 import os
+import requests
+import json
 from cad_tickers.exchanges.cse import get_recent_docs_from_url
+
+def make_discord_request(content):
+    url = os.getenv("DISCORD_WEBHOOK")
+    if url == None:
+        print('DISCORD_WEBHOOK Missing')
+        pass
+    data = {}
+    data["content"] = content
+    result = requests.post(
+        url, data=json.dumps(data), headers={"Content-Type": "application/json"}
+    )
+    print(result)
+
 # list of stocks with urls to cse listing page
 stockUrls = [
 {
@@ -50,8 +65,9 @@ for stock in stockUrls:
         if exists == False:
             print(f"Adding {stockName}: {docUrl}")
             df.loc[len(df)] = [stockName, stockUrl, docUrl]
+            make_discord_request(f"*{stockName}*: \n {docUrl}")
         else:
             print(f"Not adding url")
-    time.sleep(1)
+    time.sleep(2)
 
 df.to_csv(csv_file, index=False)

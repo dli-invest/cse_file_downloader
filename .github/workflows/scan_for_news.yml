@@ -1,0 +1,66 @@
+name: Scan Yahoo Messages
+
+on:
+  push:
+    branches:
+      - 'main'
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron: '5 5 * * *'
+
+# reddit access for golang tests
+# since I am an single dev
+# what I care about is regression
+# making sure my code still works on the reddit api
+
+env: 
+  DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_FILES_FILINGS }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Check Messages
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8.6' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+          architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
+
+      - name: Run Script to get us tickers
+        run: |
+          sudo apt install build-essential libpoppler-cpp-dev pkg-config -y
+          pip install -r requirements.txt
+          python3 scrap_cse_release.py
+
+      - uses: actions/upload-artifact@v2
+        with:
+            name: scrap cse releases
+            path: data/docs.csv
+
+      - name: Commit files
+        run: |
+          git add *.csv
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git commit -m "Add changes" -a
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+
+
+      - uses: sarisia/actions-status-discord@v1
+        if: failure()
+        with:
+          webhook: ${{ secrets.DISCORD_CODE_STATUS_WEBHOOK }}
+          status: ${{ job.status }}
+          title: ${{github.repository}}
+          description: "Failed to get eod tickers"
+          nofail: false
+          nocontext: false
+          noprefix: false
+          color: 0xff0000
+          username: Cse File Downloader
