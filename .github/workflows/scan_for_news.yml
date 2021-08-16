@@ -41,19 +41,17 @@ jobs:
 
       - name: Commit files
         run: |
-          if !git diff-index --quiet HEAD --; then
-             echo "PUSH_FILES=true" >> $GITHUB_ENV
-          fi
           git add *.csv
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          if !git diff-index --quiet HEAD --; then
-             echo "PUSH_FILES=true" >> $GITHUB_ENV
+          if [[ -z $(git status -s) ]]
+          then
+            echo "tree is clean"
+          else
+            echo "tree is dirty, please commit changes before running this"
+            echo "PUSH_FILES=true" >> $GITHUB_ENV
           fi
           git commit -m "Add changes" -a
-          if !git diff-index --quiet HEAD --; then
-             echo "PUSH_FILES=true" >> $GITHUB_ENV
-          fi
 
       - name: Test
         run: echo ${{ env.PUSH_FILES }}
