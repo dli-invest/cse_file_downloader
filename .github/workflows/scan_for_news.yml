@@ -1,4 +1,4 @@
-name: Scan Yahoo Messages
+name: Adding Cse Files
 
 on:
   push:
@@ -41,7 +41,7 @@ jobs:
 
       - name: Commit files
         run: |
-          git add *.csv
+          git add *.csv || true
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           if [[ -z $(git status -s) ]]
