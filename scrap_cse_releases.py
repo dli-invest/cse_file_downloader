@@ -23,16 +23,11 @@ def make_discord_request(content, filename, file):
         pass
     data = {}
     data["content"] = content
-    resp = requests.post(
-        url, data=json.dumps(data),  headers={"Content-Type": "application/json"}
-    )
-
-    # print(resp)
-    # print(resp.content)
     files = {'file': (filename, file, 'application/pdf')}
     resp = requests.post(
-        url, files=files
+        url, data=data, files=files
     )
+
     print(resp)
     print(resp.content)
 
@@ -96,7 +91,6 @@ for stock in stockUrls:
             file_contents = dl_doc_from_url(docUrl, pdf_file_name)
             make_discord_request(f"*{stockName}*: \n {docUrl}", pdf_file_name, file_contents)
             time.sleep(2)
-            exit(1)
         else:
             pass
 
