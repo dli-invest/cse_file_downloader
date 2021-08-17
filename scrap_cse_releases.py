@@ -4,18 +4,37 @@ import os
 import requests
 import json
 from cad_tickers.exchanges.cse import get_recent_docs_from_url
+from extract_doc import dl_doc_from_url, mk_dir
+from io import BytesIO
 
-def make_discord_request(content):
+def fig_to_buffer(fig):
+  """ returns a matplotlib figure as a buffer
+  """
+  buf = BytesIO()
+  fig.savefig(buf, format='png')
+  buf.seek(0)
+  imgdata = buf.read()
+  return imgdata
+
+def make_discord_request(content, filename, file):
     url = os.getenv("DISCORD_WEBHOOK")
     if url == None:
         print('DISCORD_WEBHOOK Missing')
         pass
     data = {}
     data["content"] = content
-    result = requests.post(
-        url, data=json.dumps(data), headers={"Content-Type": "application/json"}
+    resp = requests.post(
+        url, data=json.dumps(data),  headers={"Content-Type": "application/json"}
     )
-    print(result)
+
+    # print(resp)
+    # print(resp.content)
+    files = {'file': (filename, file, 'application/pdf')}
+    resp = requests.post(
+        url, files=files
+    )
+    print(resp)
+    print(resp.content)
 
 # list of stocks with urls to cse listing page
 stockUrls = [
@@ -69,9 +88,17 @@ for stock in stockUrls:
         if exists == False:
             print(f"Adding {stockName}: {docUrl}")
             df.loc[len(df)] = [stockName, stockUrl, docUrl]
-            make_discord_request(f"*{stockName}*: \n {docUrl}")
+            # wrap in todo
+            stock_doc_dir = f"docs/{stockName}"
+            mk_dir(stock_doc_dir)
+            stock_doc_file_path = docUrl.split("/")[-1]
+            pdf_file_name = f"{stock_doc_dir}/{stock_doc_file_path}.pdf"
+            file_contents = dl_doc_from_url(docUrl, pdf_file_name)
+            make_discord_request(f"*{stockName}*: \n {docUrl}", pdf_file_name, file_contents)
             time.sleep(2)
+            exit(1)
         else:
-            print(f"Not adding url")
+            pass
+
 df = df.sort_values(by=['stock'])
 df.to_csv(csv_file, index=False)

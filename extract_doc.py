@@ -9,6 +9,22 @@ def dl_doc_from_url(url, filename):
 
     with open(filename, 'wb') as f:
         f.write(r.content)
+    
+    return r.content
+
+
+def post_image_to_discord(url: str, file: str, filename: str = 'file'):
+  url = url
+  result = requests.post(
+      url, files={filename: file}
+  )
+
+  try:
+      result.raise_for_status()
+  except requests.exceptions.HTTPError as err:
+      print(err)
+  else:
+      print("Image Delivered {}.".format(result.status_code))
 
 def mk_dir(new_dir):
     if not os.path.isdir(new_dir):
