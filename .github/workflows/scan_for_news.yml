@@ -41,18 +41,17 @@ jobs:
 
       - name: Commit files
         run: |
-          git add *.csv || true
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
           if [[ -z $(git status -s) ]]
           then
             echo "tree is clean"
           else
+            git add *.csv || true
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action"
             echo "tree is dirty, please commit changes before running this"
             echo "PUSH_FILES=true" >> $GITHUB_ENV
+            git commit -m "Add changes" -a
           fi
-          git commit -m "Add changes" -a
-
       - name: Test
         run: echo ${{ env.PUSH_FILES }}
 
