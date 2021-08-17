@@ -70,8 +70,8 @@ for stock in stockUrls:
             print(f"Adding {stockName}: {docUrl}")
             df.loc[len(df)] = [stockName, stockUrl, docUrl]
             make_discord_request(f"*{stockName}*: \n {docUrl}")
+            time.sleep(2)
         else:
             print(f"Not adding url")
-    time.sleep(2)
-
+df = df.sort_values(by=['stock'])
 df.to_csv(csv_file, index=False)
