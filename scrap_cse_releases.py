@@ -4,8 +4,8 @@ import os
 import requests
 import json
 from cad_tickers.exchanges.cse import get_recent_docs_from_url
-from extract_doc import dl_doc_from_url, mk_dir
-from io import BytesIO
+from extract_doc import mk_dir, handle_logic
+from io import BytesIO, StringIO
 
 def fig_to_buffer(fig):
   """ returns a matplotlib figure as a buffer
@@ -16,7 +16,7 @@ def fig_to_buffer(fig):
   imgdata = buf.read()
   return imgdata
 
-def make_discord_request(content, filename, file):
+def make_discord_request(content, embeds = [], filename = None, file = None):
     url = os.getenv("DISCORD_WEBHOOK")
     if url == None:
         print('DISCORD_WEBHOOK Missing')
@@ -24,41 +24,58 @@ def make_discord_request(content, filename, file):
     data = {}
     data["content"] = content
     files = {'file': (filename, file, 'application/pdf')}
-    resp = requests.post(
-        url, data=data, files=files
-    )
-
+    if filename != None and file != None:
+        resp = requests.post(
+            url, data=data, files=files
+        )
+    elif len(embeds) != 0:
+        data["embeds"] = embeds
+        resp = requests.post(
+            url, data=json.dumps(data), headers={"Content-Type": "application/json"}
+        )
     print(resp)
     print(resp.content)
 
 # list of stocks with urls to cse listing page
-stockUrls = [
-{
-    "stock": "PKK",
-    "url": "https://www.thecse.com/en/listings/technology/peak-fintech-group-inc"
-},
-{
-    "stock": "IDK",
-    "url": "https://www.thecse.com/en/listings/diversified-industries/threed-capital-inc"
-},
-{
-    "stock": "ACDC",
-    "url": "https://www.thecse.com/en/listings/technology/extreme-vehicle-battery-technologies-corp"
-},
-{
-    "stock": "VPH",
-    "url": "https://www.thecse.com/en/listings/life-sciences/valeo-pharma-inc"
-},
-{
-    "stock": "VST",
-    "url": "https://www.thecse.com/en/listings/technology/victory-square-technologies-inc"
-},
-{
-    "stock": "ACT",
-    "url": "https://thecse.com/en/listings/technology/aduro-clean-technologies-inc"
-}
-]
+# stockUrls = [
+# {
+#     "stock": "PKK",
+#     "url": "https://www.thecse.com/en/listings/technology/peak-fintech-group-inc"
+# },
+# {
+#     "stock": "IDK",
+#     "url": "https://www.thecse.com/en/listings/diversified-industries/threed-capital-inc"
+# },
+# {
+#     "stock": "ACDC",
+#     "url": "https://www.thecse.com/en/listings/technology/extreme-vehicle-battery-technologies-corp"
+# },
+# {
+#     "stock": "VPH",
+#     "url": "https://www.thecse.com/en/listings/life-sciences/valeo-pharma-inc"
+# },
+# {
+#     "stock": "VST",
+#     "url": "https://www.thecse.com/en/listings/technology/victory-square-technologies-inc"
+# },
+# {
+#     "stock": "ACT",
+#     "url": "https://thecse.com/en/listings/technology/aduro-clean-technologies-inc"
+# }
+# ]
 
+stockList = ["PKK", "IDK", "ADDC", "VPH", "VST", "ACT"]
+def get_cse_tickers_data():
+    url = "https://github.com/FriendlyUser/cad_tickers_list/blob/main/static/latest/cse.csv?raw=true"
+    r = requests.get(url, allow_redirects=True)
+    s = r.content
+    return pd.read_csv(StringIO(s.decode('utf-8')))
+
+stock_df = get_cse_tickers_data()
+stock_rows = stock_df.loc[stock_df['Symbol'].isin(stockList)]
+stock_rows.loc[:, 'stock'] = stock_rows['Symbol']
+stock_rows.loc[:, 'url'] = stock_rows['urls']
+stockUrls = stock_rows.to_dict('records')
 csv_file = "docs.csv"
 if os.path.isfile(csv_file):
     # read from csv
@@ -88,11 +105,32 @@ for stock in stockUrls:
             mk_dir(stock_doc_dir)
             stock_doc_file_path = docUrl.split("/")[-1]
             pdf_file_name = f"{stock_doc_dir}/{stock_doc_file_path}.pdf"
-            file_contents = dl_doc_from_url(docUrl, pdf_file_name)
-            make_discord_request(f"*{stockName}*: \n {docUrl}", pdf_file_name, file_contents)
-            time.sleep(2)
-        else:
+            companyName = stock.get("Company").\
+                replace('Inc.', '').\
+                replace('Pharma', '').\
+                strip()
+            dataDict = {
+                "url": docUrl,
+                "path": pdf_file_name,
+                "company_name": companyName
+            }
+            result_obj = handle_logic(dataDict)
+            file_contents = result_obj.get("contents")
+            embeds = [
+                {
+                    "title": stockName,
+                    "url": docUrl,
+                    "description": result_obj.get("summary")
+                }
+            ]
+            if file_contents != None:
+                make_discord_request(f"*{stockName}*: \n {docUrl}", embeds, pdf_file_name, file_contents)
+                time.sleep(2)
+            else:
+                make_discord_request(f"*{stockName}*: \n {docUrl}", embeds)
+                time.sleep(1)
             pass
 
+df = df.drop_duplicates()
 df = df.sort_values(by=['stock'])
 df.to_csv(csv_file, index=False)
