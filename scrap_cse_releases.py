@@ -120,7 +120,7 @@ for stock in stockUrls:
                 {
                     "title": stockName,
                     "url": docUrl,
-                    "description": result_obj.get("summary")
+                    "description": result_obj.get("summary")[:1980]
                 }
             ]
             if file_contents != None:
