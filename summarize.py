@@ -1,5 +1,6 @@
 import nltk
 nltk.download('punkt')
+nltk.download('stopwords')
 import string
 from heapq import nlargest
 
