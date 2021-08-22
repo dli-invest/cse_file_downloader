@@ -3,10 +3,15 @@
 import requests
 import os
 import pdftotext
+import re
+from summarize import gen_summary
 
-def dl_doc_from_url(url, filename):
+def dl_pdf_doc_from_url(url, filename):
+    # returns data from url for pdfs
     r = requests.get(url, allow_redirects=True)
-
+    print(r.headers)
+    if r.headers["Content-Type"] != "application/pdf":
+        return None
     with open(filename, 'wb') as f:
         f.write(r.content)
     
@@ -32,29 +37,72 @@ def mk_dir(new_dir):
 
 def handle_logic(dataDict = {
     "url": None,
-    "path": None
+    "path": None,
+    "company_name": None
 }):
-    dl_doc_from_url(dataDict.get("url"), dataDict.get("path"))
-
-    pdf_text = extract_from_file(dataDict.get("path"))
-
-    parts = dataDict.get("path").split(".")
-    txt_path = "".join(parts[:-1] + [".txt"])
+    content = dl_pdf_doc_from_url(dataDict.get("url"), dataDict.get("path"))
+    if content == None:
+        return {
+            "content": None,
+            "summary": None,
+        }
+    pdf_text = extract_from_text_file(dataDict.get("path"))
+    pdf_text = clean_text(pdf_text, dataDict.get("company_name"))
+    summary_text = gen_summary(pdf_text)
+    file_parts = dataDict.get("path").split(".")
+    txt_path = "".join(file_parts[:-1] + [".txt"])
     # save file as text
+
     with open(txt_path, "w") as f:
         f.write(pdf_text)
+    
+    return {
+        "content": content,
+        "summary": summary_text,
+    }
 
-def extract_from_file(path: str):
+def extract_from_text_file(path: str):
     # If it's password-protected
+    print(path)
     with open(path, "rb") as f:
         pdf = pdftotext.PDF(f)
 
-    # Iterate over all the pages
-    for page in pdf:
-        print(page)
-
     # Read all the text into one string
-    pdf_pages = "\n\n".join(pdf)
-    return pdf_pages
+    pdf_data = "\n\n".join(pdf)
+    return pdf_data
 
-handle_logic({"url": "https://webfiles.thecse.com/Peak_Fintech_Continues_Expansion_of_Business_Hub_with_Addition_of_Two_New_Banks_and_New_Office_in_Guangzhou.pdf?dcWC2NW_GzmSFbHOadxyHNESnqSpHkza", "path": "docs/PKK_Peak_Fintech_Continues_Expansion_of_Business_Hub_with_Addition_of_Two_New_Banks_and_New_Office_in_Guangzhou.pdf?dcWC2NW_GzmSFbHOadxyHNESnqSpHkza.pdf"})
+def clean_text(summary_text: str, company_name: str):
+    # remove all text below
+    # About {company_name}
+    test_phrase = f"About {company_name}"
+    try:
+        summary_content = summary_text[:summary_text.index(test_phrase)]
+        if len(summary_content) > 10:
+            return summary_content
+        else:
+            raise Exception("Please work")
+    except Exception as e:
+        # try upper case
+        print(summary_text)
+        updated_company_name = "ABOUT"
+        try:
+            return summary_text[:summary_text.index(updated_company_name)]
+        except Exception as e:
+            try:
+                print(summary_text)
+                search = re.search(summary_text, company_name(), re.IGNORECASE)
+                print(search)
+                if search:
+                    start_index = search.start()
+                    return summary_text[:start_index]
+                else:
+                    raise Exception("I done goofed")
+            except Exception as e:
+                print(e)
+                print("Code is confused, dont judge me, I just want to make money on stonks.")
+                return summary_text
+
+            
+
+
+# handle_logic({"url": "https://webfiles.thecse.com/Peak_Fintech_Continues_Expansion_of_Business_Hub_with_Addition_of_Two_New_Banks_and_New_Office_in_Guangzhou.pdf?dcWC2NW_GzmSFbHOadxyHNESnqSpHkza", "path": "docs/PKK_Peak_Fintech_Continues_Expansion_of_Business_Hub_with_Addition_of_Two_New_Banks_and_New_Office_in_Guangzhou.pdf?dcWC2NW_GzmSFbHOadxyHNESnqSpHkza.pdf"})
