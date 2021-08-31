@@ -6,6 +6,15 @@ import json
 from cad_tickers.exchanges.cse import get_recent_docs_from_url
 from extract_doc import mk_dir, handle_logic
 from io import BytesIO, StringIO
+"""
+1. Get the list of documents from the CSE website
+2. For each document, get the document url
+3. If the document url is not in the csv file, add it to the csv file
+4. For each document url, download the document and add it to the docs folder
+5. For each document url, make a discord request with the document url
+6. For each document url, make a discord request with the document summary
+"""
+
 
 def fig_to_buffer(fig):
   """ returns a matplotlib figure as a buffer

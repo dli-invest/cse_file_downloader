@@ -1,5 +1,8 @@
-# scrap cse document
-# summarize docs
+# 1. Download the PDF file from the URL.
+# 2. Open the PDF file in Python.
+# 3. Extract the text from the PDF file.
+# 4. Clean up the text.
+# 5. Return the cleaned text.
 import requests
 import os
 import pdftotext

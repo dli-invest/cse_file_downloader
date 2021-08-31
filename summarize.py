@@ -5,6 +5,15 @@ import string
 from heapq import nlargest
 
 def gen_summary(text):
+    """
+        1. First, it removes all the punctuation marks from the text.
+        2. Then, it splits the text into words.
+        3. Next, it removes all the stopwords from the text.
+        4. Then, it calculates the frequency of each word.
+        5. Next, it calculates the frequency of each sentence from the text.
+        6. Then, it calculates the score of each sentence by adding the frequency of each word belonging to that sentence.
+        7. Finally, it selects the top N sentences with the highest scores.
+    """
     try:
         if text.count(". ") > 20:
             length = int(round(text.count(". ")/10, 0))
