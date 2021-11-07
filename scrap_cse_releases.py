@@ -97,8 +97,11 @@ else:
 for stock in stockUrls:
     stockName = stock.get("stock")
     stockUrl = stock.get("url")
-
-    urls = get_recent_docs_from_url(stockUrl)
+    urls = []
+    try:
+        urls = get_recent_docs_from_url(stockUrl)
+    except Exception as e:
+        pass
     
     for docUrl in urls:
         # skip malformed relative urls
