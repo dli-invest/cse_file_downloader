@@ -128,11 +128,16 @@ for stock in stockUrls:
             }
             result_obj = handle_logic(dataDict)
             file_contents = result_obj.get("contents")
+            summary = "N/A"
+            try:
+                summary = result_obj.get("summary")[:1980]
+            except TypeError as e:
+                pass
             embeds = [
                 {
                     "title": stockName,
                     "url": docUrl,
-                    "description": result_obj.get("summary", "N/A")[:1980]
+                    "description": summary
                 }
             ]
             if file_contents != None:
