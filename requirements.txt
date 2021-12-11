@@ -2,3 +2,4 @@ cad-tickers==1.5.2
 spacy
 pdftotext
 nltk
+docx
