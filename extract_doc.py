@@ -7,13 +7,14 @@ import requests
 import os
 import pdftotext
 import re
+from docx import Document
 from summarize import gen_summary
 
 def dl_pdf_doc_from_url(url, filename):
     # returns data from url for pdfs
     r = requests.get(url, allow_redirects=True)
     print(r.headers)
-    if r.headers["Content-Type"] != "application/pdf":
+    if r.headers["Content-Type"] not in ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]:
         return None
     with open(filename, 'wb') as f:
         f.write(r.content)
@@ -49,7 +50,7 @@ def handle_logic(dataDict = {
             "content": None,
             "summary": None,
         }
-    pdf_text = extract_from_text_file(dataDict.get("path"))
+    pdf_text = extract_from_file(dataDict.get("path"))
     pdf_text = clean_text(pdf_text, dataDict.get("company_name"))
     summary_text = gen_summary(pdf_text)
     file_parts = dataDict.get("path").split(".")
@@ -64,15 +65,23 @@ def handle_logic(dataDict = {
         "summary": summary_text,
     }
 
-def extract_from_text_file(path: str):
-    # If it's password-protected
-    print(path)
-    with open(path, "rb") as f:
-        pdf = pdftotext.PDF(f)
+def extract_from_file(path: str):
+    # try pdf, if that does not work
+    # try docx
+    # if there are 3 formats, redo this format
+    try:
+        with open(path, "rb") as f:
+            pdf = pdftotext.PDF(f)
 
-    # Read all the text into one string
-    pdf_data = "\n\n".join(pdf)
-    return pdf_data
+        # Read all the text into one string
+        pdf_data = "\n\n".join(pdf)
+        return pdf_data
+    except Exception as e:
+        print("FOUND A WORD DOCX")
+        # assume word doc
+        with open(path, "rb") as doc_file:
+            document = Document(doc_file)
+        return "\n".join(document.paragraphs)
 
 def clean_text(summary_text: str, company_name: str):
     # remove all text below
