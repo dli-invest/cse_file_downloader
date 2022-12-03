@@ -81,7 +81,12 @@ def extract_from_file(path: str):
         # assume word doc
         with open(path, "rb") as doc_file:
             document = Document(doc_file)
-        return "\n".join(document.paragraphs)
+        try:
+            paragraphs = [x.text for x in document.paragraphs]
+            return "\n".join(paragraphs)
+        except Exception as e:
+            print(e)
+            return "\n".join(document.paragraphs)
 
 def clean_text(summary_text: str, company_name: str):
     # remove all text below
