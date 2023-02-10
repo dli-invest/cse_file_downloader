@@ -45,34 +45,6 @@ def make_discord_request(content, embeds = [], filename = None, file = None):
     print(resp)
     print(resp.content)
 
-# list of stocks with urls to cse listing page
-# stockUrls = [
-# {
-#     "stock": "PKK",
-#     "url": "https://www.thecse.com/en/listings/technology/peak-fintech-group-inc"
-# },
-# {
-#     "stock": "IDK",
-#     "url": "https://www.thecse.com/en/listings/diversified-industries/threed-capital-inc"
-# },
-# {
-#     "stock": "ACDC",
-#     "url": "https://www.thecse.com/en/listings/technology/extreme-vehicle-battery-technologies-corp"
-# },
-# {
-#     "stock": "VPH",
-#     "url": "https://www.thecse.com/en/listings/life-sciences/valeo-pharma-inc"
-# },
-# {
-#     "stock": "VST",
-#     "url": "https://www.thecse.com/en/listings/technology/victory-square-technologies-inc"
-# },
-# {
-#     "stock": "ACT",
-#     "url": "https://thecse.com/en/listings/technology/aduro-clean-technologies-inc"
-# }
-# ]
-
 stockList = ["PKK", "IDK", "ADDC", "VPH", "VST", "ACT"]
 def get_cse_tickers_data():
     url = "https://github.com/FriendlyUser/cad_tickers_list/blob/main/static/latest/cse.csv?raw=true"
